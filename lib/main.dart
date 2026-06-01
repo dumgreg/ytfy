@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:share_plus/share_plus.dart';
 import 'services/metadata_service.dart';
 import 'services/spotify_service.dart';
 
@@ -40,7 +42,7 @@ class _YtfyAppState extends State<YtfyApp> {
     final url = file.path;
 
     if (!url.contains('music.youtube.com')) {
-      _showSnackbar('Not a YouTube Music link');
+      setState(() => _statusMessage = 'Not a YouTube Music link');
       return;
     }
 
@@ -51,24 +53,29 @@ class _YtfyAppState extends State<YtfyApp> {
 
     try {
       final track = await _metadataService.fetchTrack(url);
-      await _spotifyService.openSearch(track.title, track.artist);
-      setState(() => _statusMessage = 'Opening: ${track.title}');
-    } on MetadataException {
-      _showSnackbar('Could not fetch track info');
-      setState(() => _statusMessage = null);
-    } catch (e) {
-      _showSnackbar('Something went wrong');
-      setState(() => _statusMessage = null);
-    } finally {
-      setState(() => _isProcessing = false);
-    }
-  }
+      final spotifyUrl = _spotifyService.buildSearchUrl(track.title, track.artist);
+      if (!mounted) return;
+      setState(() => _statusMessage = 'Choose where to open');
 
-  void _showSnackbar(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+      final result = await SharePlus.instance.share(
+        ShareParams(uri: Uri.parse(spotifyUrl), subject: track.title),
+      );
+
+      if (!mounted) return;
+      if (result.status == ShareResultStatus.success) {
+        await SystemNavigator.pop();
+      } else if (result.status == ShareResultStatus.dismissed) {
+        setState(() => _statusMessage = 'Share cancelled');
+      } else {
+        setState(() => _statusMessage = 'Share unavailable');
+      }
+    } on MetadataException {
+      if (mounted) setState(() => _statusMessage = 'Could not fetch track info');
+    } catch (e) {
+      if (mounted) setState(() => _statusMessage = 'Something went wrong');
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
+    }
   }
 
   @override
@@ -81,10 +88,18 @@ class _YtfyAppState extends State<YtfyApp> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                _isProcessing ? Icons.hourglass_empty : Icons.music_note,
-                size: 64,
-                color: Colors.blue,
+              SizedBox(
+                width: 120,
+                height: 120,
+                child: _isProcessing
+                    ? const CircularProgressIndicator(strokeWidth: 3)
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: Image.asset(
+                          'assets/icon.png',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
               ),
               const SizedBox(height: 16),
               Text(

@@ -1,0 +1,79 @@
+name: Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.44.0'
+          cache: true
+
+      - name: Show toolchain
+        run: |
+          flutter --version
+          java -version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate launcher icons
+        if: hashFiles('assets/icon.png') != ''
+        run: |
+          dart run flutter_launcher_icons
+        continue-on-error: true
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+      - name: Build release APK (unsigned)
+        run: flutter build apk --release
+
+      - name: Rename APKs
+        id: rename
+        run: |
+          mv build/app/outputs/flutter-apk/app-debug.apk ytfy-debug-${{ github.ref_name }}.apk
+          mv build/app/outputs/flutter-apk/app-release.apk ytfy-release-unsigned-${{ github.ref_name }}.apk
+
+      - name: Upload to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ytfy-debug-${{ github.ref_name }}.apk
+            ytfy-release-unsigned-${{ github.ref_name }}.apk
+          generate_release_notes: true
+
+      - name: Upload artifacts (manual run)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ytfy-apks
+          path: |
+            ytfy-debug-*.apk
+            ytfy-release-unsigned-*.apk
