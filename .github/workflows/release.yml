@@ -48,32 +48,22 @@ jobs:
       - name: Test
         run: flutter test
 
-      - name: Build debug APK
-        run: flutter build apk --debug --target-platform=android-arm64
-
       - name: Build release APK (unsigned, arm64-only)
         run: flutter build apk --release --target-platform=android-arm64
 
-      - name: Rename APKs
-        id: rename
-        run: |
-          mv build/app/outputs/flutter-apk/app-debug.apk ytfy-debug-${{ github.ref_name }}.apk
-          mv build/app/outputs/flutter-apk/app-release.apk ytfy-release-unsigned-${{ github.ref_name }}.apk
+      - name: Rename APK
+        run: mv build/app/outputs/flutter-apk/app-release.apk ytfy-release-unsigned-${{ github.ref_name }}.apk
 
       - name: Upload to release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            ytfy-debug-${{ github.ref_name }}.apk
-            ytfy-release-unsigned-${{ github.ref_name }}.apk
+          files: ytfy-release-unsigned-${{ github.ref_name }}.apk
           generate_release_notes: true
 
-      - name: Upload artifacts (manual run)
+      - name: Upload artifact (manual run)
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
-          name: ytfy-apks
-          path: |
-            ytfy-debug-*.apk
-            ytfy-release-unsigned-*.apk
+          name: ytfy-release-apk
+          path: ytfy-release-unsigned-*.apk

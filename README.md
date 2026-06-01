@@ -82,8 +82,8 @@ Push a tag like `v0.2.0` to trigger `.github/workflows/release.yml`. The workflo
 - Sets up Java 17 + Flutter 3.44
 - Runs `flutter analyze` and `flutter test`
 - Generates launcher icons from `assets/icon.png` (if present)
-- Builds arm64-only debug + release APKs
-- Attaches both APKs to a GitHub Release with auto-generated notes
+- Builds an arm64-only release APK
+- Attaches it to a GitHub Release with auto-generated notes
 
 You can also trigger it manually from the Actions tab.
 
