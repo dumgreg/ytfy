@@ -45,18 +45,20 @@ On a physical device or emulator, share any `https://music.youtube.com/watch?v=�
 
 ## Build
 
+Targets **Android 15+ (API 35+)** and **arm64-v8a** only — modern phones, single ABI. The release APK is ~16 MB.
+
 **Debug APK** (sideload for testing):
 
 ```bash
-flutter build apk --debug
+flutter build apk --debug --target-platform=android-arm64
 adb install -r build/app/outputs/flutter-apk/app-debug.apk
 ```
 
-**Release APK** (unsigned — sign it before distribution):
+**Release APK** (unsigned, arm64-only):
 
 ```bash
-flutter build apk --release
-# build/app/outputs/flutter-apk/app-release.apk
+flutter build apk --release --target-platform=android-arm64
+# build/app/outputs/flutter-apk/app-release.apk  (~16 MB)
 ```
 
 **iOS** (requires Xcode, signing not configured by default):
@@ -80,7 +82,7 @@ Push a tag like `v0.2.0` to trigger `.github/workflows/release.yml`. The workflo
 - Sets up Java 17 + Flutter 3.44
 - Runs `flutter analyze` and `flutter test`
 - Generates launcher icons from `assets/icon.png` (if present)
-- Builds debug + release APKs
+- Builds arm64-only debug + release APKs
 - Attaches both APKs to a GitHub Release with auto-generated notes
 
 You can also trigger it manually from the Actions tab.

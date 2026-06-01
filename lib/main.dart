@@ -96,7 +96,7 @@ class _YtfyAppState extends State<YtfyApp> {
                     : ClipRRect(
                         borderRadius: BorderRadius.circular(24),
                         child: Image.asset(
-                          'assets/icon.png',
+                          'assets/icon_home.png',
                           fit: BoxFit.cover,
                         ),
                       ),
