@@ -1,0 +1,39 @@
+class Track {
+  final String title;
+  final String artist;
+  final String url;
+
+  const Track({
+    required this.title,
+    required this.artist,
+    required this.url,
+  });
+
+  factory Track.fromNoembed(Map<String, dynamic> json) {
+    final fullTitle = json['title'] as String? ?? '';
+    final author = json['author_name'] as String? ?? '';
+
+    // Parse "Artist - Song Title" format
+    final parts = fullTitle.split(' - ');
+    final artistName = parts.isNotEmpty ? parts[0].trim() : author;
+    final trackTitle = parts.length > 1 ? parts[1].trim() : fullTitle;
+
+    return Track(
+      title: _cleanTitle(trackTitle),
+      artist: artistName,
+      url: json['url'] as String? ?? '',
+    );
+  }
+
+  static String _cleanTitle(String title) {
+    // Remove common suffixes
+    return title
+        .replaceAll(RegExp(r'\s*\(Official.*?\)'), '')
+        .replaceAll(RegExp(r'\s*\(4K.*?\)'), '')
+        .replaceAll(RegExp(r'\s*\[Official.*?\]'), '')
+        .trim();
+  }
+
+  @override
+  String toString() => 'Track($title by $artist)';
+}
