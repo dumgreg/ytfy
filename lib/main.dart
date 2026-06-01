@@ -37,7 +37,7 @@ class _YtfyAppState extends State<YtfyApp> {
     if (files.isEmpty || _isProcessing) return;
 
     final file = files.first;
-    final url = file.value;
+    final url = file.path;
 
     if (!url.contains('music.youtube.com')) {
       _showSnackbar('Not a YouTube Music link');

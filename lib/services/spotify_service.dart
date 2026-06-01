@@ -29,7 +29,9 @@ class SpotifyService {
     }
 
     // Fallback to web browser
-    final webUrl = Uri.parse('https://open.spotify.com/search?q=$query');
+    final rawQuery = '$title $artist';
+    final pathQuery = Uri.encodeComponent(rawQuery).replaceAll('%20', '+');
+    final webUrl = Uri.parse('https://open.spotify.com/search/$pathQuery');
     return await launchUrl(webUrl, mode: LaunchMode.externalApplication);
   }
 }

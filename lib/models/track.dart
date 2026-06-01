@@ -15,8 +15,15 @@ class Track {
 
     // Parse "Artist - Song Title" format
     final parts = fullTitle.split(' - ');
-    final artistName = parts.isNotEmpty ? parts[0].trim() : author;
-    final trackTitle = parts.length > 1 ? parts[1].trim() : fullTitle;
+    final String artistName;
+    final String trackTitle;
+    if (parts.length > 1) {
+      artistName = parts[0].trim();
+      trackTitle = parts[1].trim();
+    } else {
+      artistName = author;
+      trackTitle = fullTitle;
+    }
 
     return Track(
       title: _cleanTitle(trackTitle),
